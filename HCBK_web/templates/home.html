@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block page_name %}
+
+    HCBK home page
+
+{% endblock %}
+
+
+{% block title %}
+
+    Bienvenue chez HCBK
+
+{% endblock %}
+
+
+<body>
+
+    {% block table %}
+
+
+    <fieldset>
+    <h4>Choix des entreprises</h4>
+
+    <h5>Choisissez la catégorie d'entreprises :</h5>
+
+    <select id="select_categorie">
+
+        {% for i in list_categorie_name %}
+        <option value={{i}}>{{i[:-5]}}</option>
+        {% endfor %}
+    </select>
+
+    <h5>Choisissez une entreprise en particulier :</h5>
+
+    <div class = "container">
+        <input type="text" id="search_companies" name="search_companies" maxlength="5" size="10">
+        <div id = "suggestions"></div>
+    </div>
+    
+    <h4>Choisissez les ratios : </h4>
+
+    <div>
+        <input type="checkbox" id={{ratios_list[0]}} name="selction_ratios" value={{ratios_list[0]}} checked>
+        <label for={{ratios_list[0]}}>{{ratios_list[0]}}</label>        
+    </div>
+
+    <div>
+        <input type="checkbox" id={{ratios_list[1]}} name="selction_ratios" value={{ratios_list[1]}} checked> 
+        <label for={{ratios_list[1]}}>{{ratios_list[1]}}</label>
+    </div>
+    
+    {% for ratio_name in ratios_list[2:] %}
+        <div>
+            <input type="checkbox" id={{ratio_name}} name="selction_ratios" value={{ratio_name}}>
+            <label for={{ratio_name}}>{{ratio_name}}</label>
+        </div>
+    {% endfor %}
+
+    <h4>Choisissez la fréquence : </h4>
+
+    <input type="radio" id={{possible_frequences_list[0]}} name="frequence" value={{possible_frequences_list[0]}} checked>
+    <label for={{possible_frequences_list[0]}}>{{possible_frequences_list[0]}}</label>
+
+    <input type="radio" id={{possible_frequences_list[1]}} name="frequence" value={{possible_frequences_list[1]}} >
+    <label for={{possible_frequences_list[1]}}>{{possible_frequences_list[1]}}</label>
+
+</fieldset>
+
+    
+
+<div id = "picture_data">
+
+    <h4>Les entreprises selectionnées : </h4>
+    <input type="button" id="Reinit" name="Reinit" value="Supprimer tout" onclick="reinit_comp();">
+    {% for j in companies_list %}
+    
+        <label for={{j}}>{{j}}</label>
+        <input type="button" id={{j}} name="selection_companies" value="X" onclick="del_comp();">
+    
+    {% endfor %}
+
+</div>
+
+
+
+<script type="text/javascript">
+    const all_companies = {{all_companies_list | tojson}};
+
+const searchinput = document.getElementById("search_companies");
+
+searchinput.addEventListener('keyup', function(){
+    const input = searchinput.value;
+
+    const result = all_companies.filter(item => item.toLocaleUpperCase().includes(input.toLocaleUpperCase()));
+
+    let suggestion = '';
+    if(input !=''){
+        result.forEach(resultItem => suggestion +=`
+        <button class = "suggestions" onclick ="add_comp();" id = ${resultItem}>${resultItem}</button>`)
+    }
+
+
+    document.getElementById('suggestions').innerHTML = suggestion;
+
+
+    
+
+});
+
+function maj_data(){
+
+    var companies = document.getElementsByName("selection_companies");
+    var list_selected_companies = [];
+    for (var i = 0; i<companies.length; i++){
+        list_selected_companies.push(companies[i].id)
+    }
+
+    var cases = document.getElementsByName("selction_ratios");
+    var selected_ratios = [];
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i].checked) {
+                selected_ratios.push(cases[i].value);
+            }
+        }
+
+    var selected_frequency = document.getElementsByName("frequence");
+    for(i = 0; i < selected_frequency.length; i++) {
+        if(selected_frequency[i].checked){
+            selected_frequency  =  selected_frequency[i].value;
+        }
+                
+    }
+
+    var categorie_name = document.getElementById("select_categorie").value;
+
+    
+        console.log(selected_ratios)
+        dict_values = {} 
+        dict_values["selected_ratios"] = selected_ratios
+        dict_values["categorie_name"] = categorie_name
+        dict_values["selected_frequency"] = selected_frequency
+        dict_values["companies"] = list_selected_companies
+        const s = JSON.stringify(dict_values); // Stringify converts a JavaScript object or value to a JSON string
+        $.ajax({
+            url:"/maj_data",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            success : function(data){
+                $(picture_data).replaceWith(data)
+            }
+
+        });
+    
+};
+
+function maj_list_categories(){
+
+    var categorie_name = document.getElementById("select_categorie").value;
+    var cases = document.getElementsByName("selction_ratios");
+    var selected_ratios = [];
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i].checked) {
+                selected_ratios.push(cases[i].value);
+            }
+        }
+
+    var selected_frequency = document.getElementsByName("frequence");
+    for(i = 0; i < selected_frequency.length; i++) {
+        if(selected_frequency[i].checked){
+            selected_frequency  =  selected_frequency[i].value;
+        }
+                
+    }
+    var dict_categories = {}
+    dict_categories["categorie_name"] = categorie_name
+    dict_categories['selected_frequency'] = selected_frequency;
+    dict_categories['selected_ratios'] = selected_ratios;
+    const s = JSON.stringify(dict_categories); // Stringify converts a JavaScript object or value to a JSON string
+    $.ajax({
+            url:"/maj_list",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            success : function(data){
+                $(picture_data).replaceWith(data)
+            }
+
+        });
+
+}
+
+function reinit_comp() {
+    var cases = document.getElementsByName("selction_ratios");
+    var selected_ratios = [];
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i].checked) {
+                selected_ratios.push(cases[i].value);
+            }
+        }
+
+    var selected_frequency = document.getElementsByName("frequence");
+    for(i = 0; i < selected_frequency.length; i++) {
+        if(selected_frequency[i].checked){
+            selected_frequency  =  selected_frequency[i].value;
+        }
+                
+    }
+    
+    my_ticker_dict = {}
+    my_ticker_dict['selected_frequency'] = selected_frequency;
+    my_ticker_dict['selected_ratios'] = selected_ratios;
+    const s = JSON.stringify(my_ticker_dict); // Stringify converts a JavaScript object or value to a JSON string
+
+    $.ajax({
+            url:"/reinit_comp",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            success : function(data){
+                $(picture_data).replaceWith(data)
+            }
+
+        });
+    
+}
+
+function add_comp(){
+    var selected_frequency = document.getElementsByName("frequence");
+    var cases = document.getElementsByName("selction_ratios");
+
+    var selected_ratios = [];
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i].checked) {
+                selected_ratios.push(cases[i].value);
+            }
+        }
+    for(i = 0; i < selected_frequency.length; i++) {
+    if(selected_frequency[i].checked){
+        selected_frequency  =  selected_frequency[i].value;
+    }
+                
+    }
+    my_ticker_dict = {}
+    my_ticker_dict['ticker'] = event.target.id;
+    my_ticker_dict['selected_frequency'] = selected_frequency;
+    my_ticker_dict['selected_ratios'] = selected_ratios;
+    const s = JSON.stringify(my_ticker_dict); // Stringify converts a JavaScript object or value to a JSON string
+
+    $.ajax({
+            url:"/add_comp",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            success : function(data){
+                $(picture_data).replaceWith(data)
+            }
+
+        });
+}
+
+
+function del_comp(){
+    var selected_frequency = document.getElementsByName("frequence");
+    var cases = document.getElementsByName("selction_ratios");
+
+    var selected_ratios = [];
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i].checked) {
+                selected_ratios.push(cases[i].value);
+            }
+        }
+    for(i = 0; i < selected_frequency.length; i++) {
+    if(selected_frequency[i].checked){
+        selected_frequency  =  selected_frequency[i].value;
+    }
+                
+    }
+    my_ticker_dict = {}
+    my_ticker_dict['ticker'] = event.target.id;
+    my_ticker_dict['selected_frequency'] = selected_frequency;
+    my_ticker_dict['selected_ratios'] = selected_ratios;
+    const s = JSON.stringify(my_ticker_dict); // Stringify converts a JavaScript object or value to a JSON string
+
+    $.ajax({
+            url:"/del_comp",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            success : function(data){
+                $(picture_data).replaceWith(data)
+            }
+
+        });
+}
+
+
+$(document).ready(function () {
+
+$('#select_categorie').change(function(){
+    maj_list_categories();
+});
+$('input[type=checkbox][name=selction_ratios]').change(function() {
+    maj_data();
+    });   
+$('input[type=radio][name=frequence]').change(function() {
+    maj_data();
+}); 
+
+});
+</script>
+
+
+    
+    {% endblock %}
+
+
+
+
+
+</body>
+
+
+
+
+
+</html>
