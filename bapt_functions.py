@@ -6,7 +6,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-import_path = 'API_Connection/export'
+import_path = 'export'
 
 class Export :
 

@@ -13,7 +13,7 @@ default_sector_number = categorie_number_list[1]
 categorie_name_list = categorie_list[1]
 sort_by = 'by_ratio'
 the_frequence = 'annual'
-all_companies_list = list(Export.import_my_json("C:/Users/bapti/Documents/Finance/Algorithmes/API_Connection/export/00_companies.json").keys())
+all_companies_list = list(Export.import_my_json("export/00_companies.json").keys())
 my_companies_list = []
 
 @app.route('/add_comp', methods = ["POST"])
