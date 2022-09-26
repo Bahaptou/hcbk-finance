@@ -66,8 +66,6 @@ pyparsing==3.0.9
 python-dateutil==2.8.2
 python-dotenv==0.20.0
 pytz==2022.1
-pywin32==304
-pywin32-ctypes==0.2.0
 pyzmq==23.2.0
 requests==2.28.1
 sec-api==1.0.13
