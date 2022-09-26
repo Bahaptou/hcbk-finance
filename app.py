@@ -1,9 +1,6 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json
 import numpy as np
-import sys 
-import os
-#sys.path.append(os.path.abspath("C:/Users/bapti/Documents/Finance/Algorithmes/API_Connection/final_files"))
 from bapt_functions import Ratios, Export, Sector
 
 
@@ -294,7 +291,7 @@ def maj_data():
 
 
 
-@app.route('/homepage')
+@app.route('/')
 def homepage():
 
     df = Sector.get_ratio_frame_frequency(default_sector_number,frequency = the_frequence, list_ratio=selected_ratio, sort_type = sort_by)
@@ -332,7 +329,7 @@ def homepage():
 
     df = df.reset_index()
 
-    return render_template('home.html', ratios_list = list(Ratios.Ratios_switch.keys()),
+    return render_template('index.html', ratios_list = list(Ratios.Ratios_switch.keys()),
                             col = selected_ratio, labels_list = date_list, column_names=list(df.columns.values),
                             col_data = data_by_col_list, row_data=list(df.values.tolist()), Zip=zip, link_column="Mean",
                             list_categorie_number = categorie_list, list_categorie_name = categorie_name_list,
@@ -342,4 +339,4 @@ def homepage():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
