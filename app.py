@@ -184,7 +184,7 @@ def reinit_comp():
 def maj_list():
     output = request.get_json()
     my_json_from_js = json.loads(output) #this converts the json output to a python dictionary
-    companies_categorie = list(Export.import_my_json("C:/Users/bapti/Documents/Finance/Algorithmes/API_Connection/export/"+my_json_from_js["categorie_name"]).keys())
+    companies_categorie = list(Export.import_my_json("export/"+my_json_from_js["categorie_name"]).keys())
     selected_frequency = my_json_from_js["selected_frequency"]
     selected_ratio = my_json_from_js["selected_ratios"]
     for i in companies_categorie : 
