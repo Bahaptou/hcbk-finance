@@ -85,7 +85,7 @@
 
 
 <script type="text/javascript">
-    const all_companies = {{all_companies_list | tojson}};
+const all_companies = {{all_companies_list | tojson}};
 
 const searchinput = document.getElementById("search_companies");
 
@@ -134,8 +134,6 @@ function maj_data(){
 
     var categorie_name = document.getElementById("select_categorie").value;
 
-    
-        console.log(selected_ratios)
         dict_values = {} 
         dict_values["selected_ratios"] = selected_ratios
         dict_values["categorie_name"] = categorie_name
@@ -157,6 +155,12 @@ function maj_data(){
 
 function maj_list_categories(){
 
+    var companies = document.getElementsByName("selection_companies");
+    var list_selected_companies = [];
+    for (var i = 0; i<companies.length; i++){
+        list_selected_companies.push(companies[i].id)
+    }
+
     var categorie_name = document.getElementById("select_categorie").value;
     var cases = document.getElementsByName("selction_ratios");
     var selected_ratios = [];
@@ -177,6 +181,7 @@ function maj_list_categories(){
     dict_categories["categorie_name"] = categorie_name
     dict_categories['selected_frequency'] = selected_frequency;
     dict_categories['selected_ratios'] = selected_ratios;
+    dict_categories["companies"] = list_selected_companies;
     const s = JSON.stringify(dict_categories); // Stringify converts a JavaScript object or value to a JSON string
     $.ajax({
             url:"/maj_list",
@@ -227,6 +232,13 @@ function reinit_comp() {
 }
 
 function add_comp(){
+
+    var companies = document.getElementsByName("selection_companies");
+    var list_selected_companies = [];
+    for (var i = 0; i<companies.length; i++){
+        list_selected_companies.push(companies[i].id)
+    }
+
     var selected_frequency = document.getElementsByName("frequence");
     var cases = document.getElementsByName("selction_ratios");
 
@@ -246,6 +258,7 @@ function add_comp(){
     my_ticker_dict['ticker'] = event.target.id;
     my_ticker_dict['selected_frequency'] = selected_frequency;
     my_ticker_dict['selected_ratios'] = selected_ratios;
+    my_ticker_dict["companies"] = list_selected_companies;
     const s = JSON.stringify(my_ticker_dict); // Stringify converts a JavaScript object or value to a JSON string
 
     $.ajax({
@@ -262,6 +275,14 @@ function add_comp(){
 
 
 function del_comp(){
+
+    var companies = document.getElementsByName("selection_companies");
+    var list_selected_companies = [];
+    for (var i = 0; i<companies.length; i++){
+        list_selected_companies.push(companies[i].id)
+    }
+
+
     var selected_frequency = document.getElementsByName("frequence");
     var cases = document.getElementsByName("selction_ratios");
 
@@ -281,6 +302,7 @@ function del_comp(){
     my_ticker_dict['ticker'] = event.target.id;
     my_ticker_dict['selected_frequency'] = selected_frequency;
     my_ticker_dict['selected_ratios'] = selected_ratios;
+    my_ticker_dict["companies"] = list_selected_companies;
     const s = JSON.stringify(my_ticker_dict); // Stringify converts a JavaScript object or value to a JSON string
 
     $.ajax({

@@ -1,3 +1,4 @@
+from flask import jsonify, render_template
 from  yahoofinancials import YahooFinancials as yf
 import json
 import pandas as pd
@@ -17,7 +18,7 @@ class Export :
             my_number = i[:2]
             my_number = my_number.replace('_','')
             my_number_list.append(my_number)
-        return my_number_list, my_list_files
+        return sorted(my_number_list), sorted(my_list_files)
 
 
     def export_my_json (monjson : dict,myPath : str) -> None :
@@ -541,8 +542,8 @@ class Sector :
             Parameters
             -------
 
-                categorie_number : int
-                The number of the sector wished
+                companies_list : list[str]
+                The list of the tickers wished
 
                 sort_type : str default 'by_date'
                     Can be {'by_date', 'by_ratio'}
@@ -616,3 +617,71 @@ class Sector :
             
             elif companies_list == [] and list_ratio == []:
                 return pd.DataFrame(columns=['Entreprise'], data=['None'], index=['Ratio'])
+
+class HCBK_web :
+
+    def all_data_sorted(all_companies_list : list[str] ,my_template : str, companies_list : list[str], sort_type : str = 'by_date', list_ratio : list[str] = list(Ratios.Ratios_switch.keys()), frequency : str = 'annual', myPath : str = import_path) -> dict :
+
+
+        df = Sector.get_ratio_frame_frequency_company(companies_list, sort_type, list_ratio, frequency, myPath)
+
+        date_list = []
+        data_by_col_list = []
+        if companies_list != []:
+            
+
+            for i in list_ratio :
+                data_one_ratio = []
+                for j in list(df.columns.values):
+                    my_data_list = df.loc[[i],[j]].values.reshape(1,len(df.loc[[i],[j]]))[0].tolist()
+                    data_one_ratio.append(my_data_list)
+                data_by_col_list.append(data_one_ratio)
+
+            if sort_type == 'by_date':
+                date_list = [list(df.index)[0][0]]
+                cpt = 0
+                for i in list(df.index) :
+                    if i[0] not in date_list:
+                        date_list.append(i[0])
+                        cpt+=1
+
+                date_list.reverse()
+
+            if sort_type == 'by_ratio':
+                date_list = [list(df.index)[0][1]]
+                cpt = 0
+                for i in list(df.index) :
+                    if i[1] not in date_list:
+                        date_list.append(i[1])
+                        cpt+=1
+
+
+        df = df.reset_index()
+
+        #del
+        #add
+        #reinit
+        #categorie
+        #maj_ratio_frequency
+        my_dict = {}
+        my_dict['my_template'] = my_template
+        my_dict['ratios_list'] = list(Ratios.Ratios_switch.keys())
+        my_dict['col'] = list_ratio
+        my_dict['labels_list'] = date_list
+        my_dict['column_names'] = list(df.columns.values)
+        my_dict['col_data'] = data_by_col_list
+        my_dict['row_data'] = list(df.values.tolist())
+        my_dict['Zip'] = zip
+        my_dict['link_column'] = "Mean"
+        my_dict['possible_frequences_list'] = ['annual', 'quarterly']
+        my_dict['all_companies_list'] = all_companies_list
+        my_dict['companies_list'] = sorted(companies_list)
+        render = my_dict
+       
+
+        return render_template(render['my_template'], ratios_list = render['ratios_list'], col = render['col'],
+            labels_list = render['labels_list'], column_names = render['column_names'], col_data = render['col_data'],
+            row_data = render['row_data'], Zip = render['Zip'], link_column = render['link_column'],
+            list_categorie_number = Export.get_existant_categorie()[0], list_categorie_name = Export.get_existant_categorie()[1], all_companies_list = all_companies_list,
+            possible_frequences_list = render['possible_frequences_list'], companies_list = render['companies_list'])
+    
