@@ -602,21 +602,28 @@ class Sector :
                     return tot_frame.swaplevel().sort_index()
                     
             elif  companies_list == [] and list_ratio != []:
+                my_list_of_date = []
+                my_list_of_index = []
                 my_false_data = []
-                for i in range(len(list_ratio)):
-                    my_false_data.append('None')
-                return pd.DataFrame(columns=['Entreprise'], data=my_false_data, index=list_ratio)
+                for i in list_ratio:
+                    for j in range(4):
+                        my_list_of_index.append(i)
+                        my_list_of_date.append('Date'+str(j))
+                        my_false_data.append('None')
+
+                tuples = list(zip(*[my_list_of_index,my_list_of_date]))
+                index = pd.MultiIndex.from_tuples(tuples, names=["Ratio","Date"])
+                    
+                return pd.DataFrame(columns=['Entreprise'], data=my_false_data, index=index)
             
             elif companies_list != [] and list_ratio == []:
                 my_false_data = []
                 for i in range(len(companies_list)):
                     my_false_data.append('None')
-                return pd.DataFrame(columns=companies_list, data=[my_false_data], index=['Ratio'])
+                return pd.DataFrame(columns=companies_list, data=[my_false_data], index=[['Ratio'],['Date']])
 
-
-            
             elif companies_list == [] and list_ratio == []:
-                return pd.DataFrame(columns=['Entreprise'], data=['None'], index=['Ratio'])
+                return pd.DataFrame(columns=['Entreprise'], data=['None'], index=[['Ratio'],['Date']])
 
 class HCBK_web :
 
@@ -624,23 +631,22 @@ class HCBK_web :
 
 
         df = Sector.get_ratio_frame_frequency_company(companies_list, sort_type, list_ratio, frequency, myPath)
-
+        df = df.transpose()
         date_list = []
         data_by_col_list = []
+        try :
+            col = df.columns.levels[0].values.tolist()
+        except AttributeError as e :
+            col = list_ratio
         if companies_list != []:
-            
 
-            for i in list_ratio :
-                data_one_ratio = []
-                for j in list(df.columns.values):
-                    my_data_list = df.loc[[i],[j]].values.reshape(1,len(df.loc[[i],[j]]))[0].tolist()
-                    data_one_ratio.append(my_data_list)
-                data_by_col_list.append(data_one_ratio)
+            for i in col :
+                data_by_col_list.append(df[i].values.tolist())
 
             if sort_type == 'by_date':
-                date_list = [list(df.index)[0][0]]
+                date_list = [df.columns.to_list()[0][0]]
                 cpt = 0
-                for i in list(df.index) :
+                for i in df.columns.to_list() :
                     if i[0] not in date_list:
                         date_list.append(i[0])
                         cpt+=1
@@ -648,14 +654,14 @@ class HCBK_web :
                 date_list.reverse()
 
             if sort_type == 'by_ratio':
-                date_list = [list(df.index)[0][1]]
+                date_list = [df.columns.to_list()[0][1]]
                 cpt = 0
-                for i in list(df.index) :
+                for i in df.columns.to_list() :
                     if i[1] not in date_list:
                         date_list.append(i[1])
                         cpt+=1
 
-
+        columns_names = df.index.to_list()
         df = df.reset_index()
 
         #del
@@ -663,20 +669,19 @@ class HCBK_web :
         #reinit
         #categorie
         #maj_ratio_frequency
-        my_dict = {}
-        my_dict['my_template'] = my_template
-        my_dict['ratios_list'] = list(Ratios.Ratios_switch.keys())
-        my_dict['col'] = list_ratio
-        my_dict['labels_list'] = date_list
-        my_dict['column_names'] = list(df.columns.values)
-        my_dict['col_data'] = data_by_col_list
-        my_dict['row_data'] = list(df.values.tolist())
-        my_dict['Zip'] = zip
-        my_dict['link_column'] = "Mean"
-        my_dict['possible_frequences_list'] = ['annual', 'quarterly']
-        my_dict['all_companies_list'] = all_companies_list
-        my_dict['companies_list'] = sorted(companies_list)
-        render = my_dict
+        render = {}
+        render['my_template'] = my_template
+        render['ratios_list'] = list(Ratios.Ratios_switch.keys()) 
+        render['col'] = col 
+        render['labels_list'] = date_list
+        render['column_names'] = columns_names 
+        render['col_data'] = data_by_col_list 
+        render['row_data'] = df.values.tolist() 
+        render['Zip'] = zip 
+        render['link_column'] = "Mean" 
+        render['possible_frequences_list'] = ['annual', 'quarterly'] 
+        render['all_companies_list'] = all_companies_list 
+        render['companies_list'] = sorted(companies_list) 
        
 
         return render_template(render['my_template'], ratios_list = render['ratios_list'], col = render['col'],

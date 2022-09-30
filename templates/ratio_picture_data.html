@@ -3,108 +3,145 @@
 
     <h4>Les entreprises selectionnées : </h4>
     <input type="button" id="Reinit" name="Reinit" value="Supprimer tout" onclick="reinit_comp();">
-    {% for j in companies_list %}
+    {% for k in companies_list %}
     
-        <label for={{j}}>{{j}}</label>
-        <input type="button" id={{j}} name="selection_companies" value="X" onclick="del_comp();">
+        <label for={{k}}>{{k}}</label>
+        <input type="button" id={{k}} name="selection_companies" value="X" onclick="del_comp();">
     
     {% endfor %}
 
+    {% if col_data[0]|length > 2 %}
+        {% for i in range(col | length) %}
+        <table>
+            <tr>
+                <th>Entreprises</th>
+                <th colspan="4">{{col[i]}}</th>
+            </tr>
 
-    <table>
-        <tr>
-            {% for col in column_names %}
-            <th>{{col}}</th>
+            <tr>
+                <th>Date</th>
+                {% for dates in labels_list %}
+                <th>{{dates}}</th>
+                {% endfor %}
+            </tr>
+
+
+            {% for j in range(column_names | length) %}
+            <tr>
+                <td>{{column_names[j]}}</td>
+                {% for row_ in col_data[i][j] %}
+                <td>{{row_}}</td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% for row in row_data %}
-        <tr>
-            {% for col, row_ in Zip(column_names, row) %}
-            {% if col == link_column %}
-            <td>
-                <button type="submit" value={{ row_ }} name="person_id" form="patient_form" class="patient_button">
-                    {{ row_ }}
-                </button>
-            </td>
-            {% else %}
-            <td>{{row_}}</td>
-            {% endif %}
-            {% endfor %}
-        </tr>
-        {% endfor %}</table>
 
-    {% for i in col %}
-    <canvas id={{i.lower()}} width="60" height="40"></canvas>
-    {% endfor %}
+        </table>
+        <canvas id={{col[i].lower()}} width="60" height="40"></canvas>
+        {% endfor %}
 
-    <script>
-        my_labels = {{labels_list | tojson}};
-        my_columns = {{column_names[2:] | tojson}};
-        my_data = {{col_data | tojson}};
-        my_ratios_list = {{col | tojson}};
+        <script>
+            my_labels = {{labels_list | tojson}};
+            my_columns = {{column_names | tojson}};
+            my_data = {{col_data | tojson}};
+            my_ratios_list = {{col | tojson}};
+        
+        
+            for (j = 0; j < my_ratios_list.length; j++) {
     
-    
-        for (j = 0; j < my_ratios_list.length; j++) {
-
-        chartlist = [];
-        lablist = [];
-        coloriage = 0;
-    
-        for (i = 0; i < my_columns.length; i++) {
-            coloriage = coloriage + 50;
-            newDataset = {
-    
-                label: my_columns[i],
-                data: my_data[j][i],
-                backgroundColor: [
-                    'rgba(' + coloriage + ', 99, ' + coloriage / 2 + ', 0.2)',
-                    'rgba(' + coloriage + ', ' + coloriage + ', 235, 0.2)',
-                    'rgba(255, 206, ' + coloriage + ', 0.2)',
-                    'rgba(' + coloriage + ', 192, 192, 0.2)',
-                    'rgba(153, ' + coloriage + ', ' + coloriage + ', 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-    
-            };
-    
-            chartlist.push(newDataset);
-    
-        }
-    
-        config = {
-            type : 'line',
-            data : {
-                labels : my_labels,
-                datasets : chartlist,
-        },
-        options: {
-        plugins: {
-            title: {
-                display: true,
-                text: my_ratios_list[j],
-                padding: {
-                    top: 10,
-                    bottom: 30
+            chartlist = [];
+            lablist = [];
+            coloriage = 0;
+        
+            for (i = 0; i < my_columns.length; i++) {
+                coloriage = coloriage + 50;
+                newDataset = {
+        
+                    label: my_columns[i],
+                    data: my_data[j][i],
+                    backgroundColor: [
+                        'rgba(' + coloriage + ', 99, ' + coloriage / 2 + ', 0.2)',
+                        'rgba(' + coloriage + ', ' + coloriage + ', 235, 0.2)',
+                        'rgba(255, 206, ' + coloriage + ', 0.2)',
+                        'rgba(' + coloriage + ', 192, 192, 0.2)',
+                        'rgba(153, ' + coloriage + ', ' + coloriage + ', 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+        
+                };
+        
+                chartlist.push(newDataset);
+        
+            }
+        
+            config = {
+                type : 'line',
+                data : {
+                    labels : my_labels,
+                    datasets : chartlist,
+            },
+            options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: my_ratios_list[j],
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    }
                 }
             }
-        }
-        }
+            }
+        
+            }
+            graph = document.getElementById(my_ratios_list[j].toLowerCase()).getContext("2d");
+            myChart = new Chart(graph, config);
+            }
+        
+        </script>
+
+    {% else %}
+
+        {% for i in range(col | length) %}
+        <table>
+            <tr>
+                <th>Entreprises</th>
+                <th colspan="4">{{col[i]}}</th>
+            </tr>
+
+            <tr>
+                <th>Date</th>
+                {% for dates in labels_list %}
+                <th>{{dates}}</th>
+                {% endfor %}
+            </tr>
+
+
+            {% for j in range(column_names | length) %}
+            <tr>
+                <td>{{column_names[j]}}</td>
+                {% for row_ in col_data[j] %}
+                <td>{{row_}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+        </table>
+        <canvas id={{col[i].lower()}} width="60" height="40"></canvas>
+        {% endfor %}
+
+    {% endif %}
+
+
     
-        }
-        graph = document.getElementById(my_ratios_list[j].toLowerCase()).getContext("2d");
-        myChart = new Chart(graph, config);
-        }
-    
-    </script>
     
 
 </div>
